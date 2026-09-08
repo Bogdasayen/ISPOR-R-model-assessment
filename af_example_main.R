@@ -27,22 +27,24 @@ source("generate_state_costs.R")
 source("generate_model_outputs.r")
 
 
-
 # Define global simulation parameters
 n_samples <- 1000
 
 # Define global model structure parameters
-n_states <- 6
 state_names <- c("AF Well", "Stroke", "ICH", "MI", "Bleed", "Dead")
+n_states    <- length(state_names)
 
-n_treatments <- 3
 treatment_names <- c("Coumarin", "Apixaban", "Dabigatran")
+n_treatments    <- length(treatment_names)
 
 event_names <- c("Stroke", "MI", "Bleed", "ICH", "Death", "SE", "TIA")
+n_events    <- length(event_names)
 
 # Define global scenario parameters
 initial_age <- 70
-final_age <- 100
+final_age   <- 100
+
+n_wtp_UK    <- 25000 # add willingness to pay threshold 
 
 # Generate the input parameters
 # This will be converted into transition matrix, state costs, and state utilities
@@ -51,7 +53,7 @@ input_parameters <- generate_input_parameters(n_samples = n_samples)
 # Run the Markov model to get the model outputs
 model_outputs <- generate_model_outputs(input_parameters, 
                                         initial_age = initial_age, 
-                                        final_age = final_age)
+                                        final_age   = final_age)
 
 ####################################################################################################
 ## Quick manual check of resutls ###################################################################
@@ -62,7 +64,7 @@ with(model_outputs, colMeans(total_qalys))
 with(model_outputs, colMeans(total_costs))
 
 # Expected net benefit at ?25,000
-with(model_outputs, colMeans(25000 * total_qalys - total_costs))
+with(model_outputs, colMeans(n_wtp_UK * total_qalys - total_costs))
 
 
 ##################################################################################################################
@@ -74,14 +76,17 @@ doac_bcea <- bcea(e = model_outputs$total_qalys,
                   interventions = treatment_names)
 
 # Summarise the results
-summary(doac_bcea, wtp = 25000)
+summary(doac_bcea, wtp = n_wtp_UK)
 
 # Plot cost-effectiveness plane using base graphics
 # Coumarin vs apixaban 
-ceplane.plot(doac_bcea, comparison = 2, wtp = 25000, graph = "base", title = "Cost-effectiveness plane Coumarin vs Apixaban")
+ceplane.plot(doac_bcea, comparison = 2, wtp = n_wtp_UK, graph = "base", title = "Cost-effectiveness plane Coumarin vs Apixaban")
 
 # Coumarin vs dabigatran
-ceplane.plot(doac_bcea, comparison = 3, wtp = 25000, graph = "base", title = "Cost-effectiveness plane Coumarin vs Dabigatran")
+ceplane.plot(doac_bcea, comparison = 3, wtp = n_wtp_UK, graph = "base", title = "Cost-effectiveness plane Coumarin vs Dabigatran")
+
+ceplane.plot(doac_bcea, wtp = n_wtp_UK, graph = "base", title = "Cost-effectiveness plane Coumarin vs Dabigatran")
+
 
 # For multiple treatment comparison
 doac_multi_ce <- multi.ce(doac_bcea)
