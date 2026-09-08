@@ -20,15 +20,17 @@ generate_input_parameters <- function(n_samples, sensitivity="None") {
 			"AF Well utility", "Stroke utility", "MI utility", "Bleed utility", "ICH utility",
 			"Stroke disutility", "MI disutility", "Bleed disutility", "ICH disutility", "SE disutility",
 			"TIA disutility")
+	
 	colnames(input_parameters) <- parameter_names
 
 	# Load the baseline/coumarin log hazard and treatment log hazard ratios estimated by a 
 	# network meta-analysis in OpenBUGS
-	bugs_log_hr <- x<-as.matrix(read.csv(file = "bugs_loghr.csv"))
+	bugs_log_hr     <- x<-as.matrix(read.csv(file = "bugs_loghr.csv"))
 	bugs_log_hazard <- as.matrix(read.csv(file = "bugs_baseline.csv"))
+	
 	# Replace . with space to ease referencing
 	# . is an escape character so needs double backslash in gsub
-	colnames(bugs_log_hr) <- gsub("\\.", " ", colnames(bugs_log_hr))
+	colnames(bugs_log_hr)     <- gsub("\\.", " ", colnames(bugs_log_hr))
 	colnames(bugs_log_hazard) <- gsub("\\.", " ", colnames(bugs_log_hazard))
 	
 	# Load the baseline (coumarin) log hazards
@@ -43,40 +45,41 @@ generate_input_parameters <- function(n_samples, sensitivity="None") {
 	
 	
 	# SE acute costs
-	input_parameters[, "SE acute cost"] <- runif(n_samples, 1186.5, 3559.5)
+	input_parameters[, "SE acute cost"]    <- runif(n_samples, 1186.5, 3559.5)
 	# TIA acute costs
-	input_parameters[, "TIA acute cost"] <- runif(n_samples, 532, 1596)
+	input_parameters[, "TIA acute cost"]   <- runif(n_samples, 532, 1596)
 	# Bleed acute costs
 	input_parameters[, "Bleed acute cost"] <- runif(n_samples, 875.75, 2627.25)
 	# MI acute costs
-	input_parameters[, "MI acute cost"] <- runif(n_samples, 2415.24, 7245.72)
+	input_parameters[, "MI acute cost"]    <- runif(n_samples, 2415.24, 7245.72)
 	# Ischemic stroke acute costs
-	S_acute_cost_mean = 11626
-	S_acute_cost_SE = 16868 / sqrt(162)
+	S_acute_cost_mean <- 11626
+	S_acute_cost_SE   <- 16868 / sqrt(162)
 	input_parameters[, "Stroke acute cost"] <- rnorm(n_samples, mean = S_acute_cost_mean, 
 	                                                 sd = S_acute_cost_SE)
 	# ICH acute costs
-	I_acute_cost_mean=11453
-	I_acute_cost_SE = 13815 / sqrt(17)
+	I_acute_cost_mean <- 11453
+	I_acute_cost_SE    <-  13815 / sqrt(17)
 	input_parameters[, "ICH acute cost"] <- rnorm(n_samples, mean = I_acute_cost_mean, 
 	                                              sd = I_acute_cost_SE)
 
   # Treatment costs are for 3 monthly cycles
 	# Uniform distribution on Coumarin costs (these are mostly due to management costs)
-	input_parameters[, "Coumarin cost"] <- runif(n_samples, 52.57, 157.70)
+	input_parameters[, "Coumarin cost"]   <- runif(n_samples, 52.57, 157.70)
 	# The DOAC costs are fixed
-	input_parameters[, "Apixaban cost"] <- rep(200.42, n_samples)
+	input_parameters[, "Apixaban cost"]   <- rep(200.42, n_samples)
 	input_parameters[, "Dabigatran cost"] <- rep(200.42, n_samples)
 
 	# Health state costs (divided by four to go from annual to quarterly costs)
 	# Stroke
-	S_cost_mean = 3613
-	S_cost_SE = 4235 / sqrt(136)
+	S_cost_mean  <- 3613
+	S_cost_SE    <- 4235 / sqrt(136)
 	input_parameters[, "Stroke management cost"] <- rnorm(n_samples, mean = S_cost_mean, 
 	                                                      sd = S_cost_SE) 
-	# ICH (Assume it is similar to stroke; divided by four to go to quarterly costs)
-	I_cost_mean = 3613
-	I_cost_SE=4235 / sqrt(136)
+	
+	# ICH (Assume it is similar to stroke; divided by four to go to quarterly costs) 
+	I_cost_mean <- 3613
+	I_cost_SE   <- 4235 / sqrt(136)
 	input_parameters[, "ICH management cost"] <- rnorm(n_samples, mean = I_cost_mean, sd = I_cost_SE)
 	# MI adds only an instant cost, so this post-state has 0 management cost
 	input_parameters[, "MI management cost"] <- rep(0, n_samples)
@@ -87,11 +90,11 @@ generate_input_parameters <- function(n_samples, sensitivity="None") {
 	# All utilities divided by 4 to make them 3-monthly
 	AF_baseline_utility <- rnorm(n_samples, 0.779, 0.0045)
 	input_parameters[, "AF Well utility"] <- min(AF_baseline_utility, 1) / 4
-	input_parameters[, "Stroke utility"] <- min(rnorm(n_samples, 0.69, 0.025), 1) / 4
-	input_parameters[, "MI utility"] <- min(rnorm(n_samples, 0.718, 0.0163), 1) / 4
-	input_parameters[, "ICH utility"] <- min(rbeta(n_samples, 3.941, 1.385), 1) / 4
+	input_parameters[, "Stroke utility"]  <- min(rnorm(n_samples, 0.69, 0.025), 1) / 4
+	input_parameters[, "MI utility"]      <- min(rnorm(n_samples, 0.718, 0.0163), 1) / 4
+	input_parameters[, "ICH utility"]     <- min(rbeta(n_samples, 3.941, 1.385), 1) / 4
 	# Assume bleed utility the same as Stroke
-	input_parameters[, "Bleed utility"] <- input_parameters[, "Stroke utility"]
+	input_parameters[, "Bleed utility"]    <- input_parameters[, "Stroke utility"]
 
 	# Disutilities applied for only 3 months
 	input_parameters[, "MI disutility"] <- (rnorm(n_samples, 0.683, 0.0156) - AF_baseline_utility) * 0.25
