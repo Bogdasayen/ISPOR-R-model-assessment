@@ -50,10 +50,12 @@ generate_model_outputs <- function(input_parameters, initial_age = 70, final_age
 	} # End loop over cycles
 	
 	# Half cycle correction (add half of final QALYs and costs)
-	total_costs[, i_treatment] <- total_costs[, i_treatment] + 
-	  0.5 * discount_factor * rowSums(cohort_array[, i_treatment, ] * state_costs[, i_treatment, ])
-	total_qalys[, i_treatment] <- total_qalys[, i_treatment] + 
-	  0.5 * discount_factor * rowSums(cohort_array[, i_treatment,] * state_utilities[, i_treatment, ])
+	for(i_treatment in 1:n_treatments) {
+		total_costs[, i_treatment] <- total_costs[, i_treatment] +
+		  0.5 * discount_factor * rowSums(cohort_array[, i_treatment, ] * state_costs[, i_treatment, ])
+		total_qalys[, i_treatment] <- total_qalys[, i_treatment] +
+		  0.5 * discount_factor * rowSums(cohort_array[, i_treatment,] * state_utilities[, i_treatment, ])
+	}
 	
 	model_outputs <- list("total_costs" = total_costs, "total_qalys" = total_qalys)
 	return(model_outputs)

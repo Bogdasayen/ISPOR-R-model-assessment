@@ -89,10 +89,10 @@ generate_input_parameters <- function(n_samples, sensitivity="None") {
 	# All utilities capped above at 1
 	# All utilities divided by 4 to make them 3-monthly
 	AF_baseline_utility <- rnorm(n_samples, 0.779, 0.0045)
-	input_parameters[, "AF Well utility"] <- min(AF_baseline_utility, 1) / 4
-	input_parameters[, "Stroke utility"]  <- min(rnorm(n_samples, 0.69, 0.025), 1) / 4
-	input_parameters[, "MI utility"]      <- min(rnorm(n_samples, 0.718, 0.0163), 1) / 4
-	input_parameters[, "ICH utility"]     <- min(rbeta(n_samples, 3.941, 1.385), 1) / 4
+	input_parameters[, "AF Well utility"] <- pmin(AF_baseline_utility, 1) / 4
+	input_parameters[, "Stroke utility"]  <- pmin(rnorm(n_samples, 0.69, 0.025), 1) / 4
+	input_parameters[, "MI utility"]      <- pmin(rnorm(n_samples, 0.718, 0.0163), 1) / 4
+	input_parameters[, "ICH utility"]     <- pmin(rbeta(n_samples, 3.941, 1.385), 1) / 4
 	# Assume bleed utility the same as Stroke
 	input_parameters[, "Bleed utility"]    <- input_parameters[, "Stroke utility"]
 
